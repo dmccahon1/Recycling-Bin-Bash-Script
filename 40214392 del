@@ -1,0 +1,54 @@
+#!/bin/bash
+#Moves a file to the recycling bin
+#del -u empties recycle bin
+
+if [ -d ~/recycle ]; then
+	:
+else 
+	mkdir ~/recycle
+fi
+
+
+if [ $# = 0 ]; then
+	#Show usage
+	echo "Usage: del filepath filepath"
+	echo "Deletes a file to the recycling bin"
+	echo "-u Cleans up recycling bin"
+
+
+elif [ $# -gt 0 ]; then
+		
+		if [ "$1" = "-u" ]; then          											#-u, delete recycling bin	
+			echo "Are you sure you want to delete all contents of Recycle Bin? [Y/N]"	#Displays security message	
+			read input																		
+			if [[ $input == Y || $input == y ]]; then								#Input success, delete bin
+				rm -rf ~/recycle/*															
+				echo "Recycle Bin is being deleted"	  							
+			else																		#Input fail, Abort
+				echo "Mission Abort"													
+			fi
+		
+		elif [ "$1" != "-u" ]; then
+			echo "Are you sure you want to recycle files? [Y/N]"     
+			read input
+			for n in "$@"; do
+				if [ -e "$n" ]; then											     
+					if [[ $input == Y || $input == y ]]; then					 #Input success
+						fullpath=$( realpath "$n" )							    #Get abs path of the file
+						filename=$( realpath "$n" | xargs -n 1 basename)		 #Get filename for first argv
+						dirname "${fullpath}" > ~/recycle/"$filename".path		#Strip filename from path and output
+						mv -t ~/recycle "$n"									#Move to target bin, files		
+						echo "File $n has been deleted"
+					else														 #Input fail, show message
+	   					echo "Mission abort, file $n is safe"
+					fi
+				else															#Test fail, show file not found
+					echo "[!] ERROR file "$n" not found"
+				fi
+			done
+else
+	#Else, if number of arguments is greater than 2, error
+	echo "ERROR: Invalid amount of arguments added"  
+fi
+fi
+##Script End

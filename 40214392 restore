@@ -1,0 +1,52 @@
+#!/bin/bash
+#Moves a file to the recycling bin
+#del -u empties recycle bin
+if [ $# = 0 ]; then
+	#Show usage
+	echo "Usage: restore filename filename"
+	echo "Restores a file to its original location"
+
+
+elif [ $# -gt 0 ]; then
+		cd ~/recycle
+		echo "Are you sure you want to restore files? [Y/N]"     
+		read input		
+		
+		for n in "$@"; do 
+			#If argument is a directory, restore the entire directory
+			if [ -d "$n" ]; then
+				echo "True"
+				#Read file arg.path
+				path=$(cat "$n".path)
+				#If filepath doesnt exist, create it
+				if [[ ! -e $path ]]; then
+						mkdir -p "$path"
+				fi
+				#Move arg to path found in arg.file, delete arg.file as no longer required
+				mv "$n" "$path"
+				rm "$n".path
+			#If file is a file & it exists, restore the file to contents of file.path
+			elif [ -e "$n" ]; then
+				if [[ "$input" == Y || "$input" == y ]]; then     #Success then read path from $1.path and move back
+					path=$(cat "$n".path)
+					#If path doesnt exist, create directories
+					if [[ ! -e $path ]]; then
+						mkdir -p "$path"
+					fi 
+					#Move arg to found path and delete arg.path
+					mv "$n" "$path"
+					rm "$n".path
+					echo "File $n has been restored"
+				else                                                  #Fail, then Abort
+					echo "Mission Abort"
+				fi
+			else
+				echo "[!] ERROR - File $n cannot be found"
+			fi
+		done
+else
+	#Else, if number of arguments is greater than 2, error
+	echo "ERROR: Invalid amount of arguments added"  
+fi
+
+##Script End
